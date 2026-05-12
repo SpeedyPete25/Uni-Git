@@ -1,10 +1,19 @@
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * Console driver for the social network program.
+ */
 public class SocialNetworkDriver {
+    // Default files are expected in the project directory.
     private static final String DEFAULT_INDEX_FILE = "index.txt";
     private static final String DEFAULT_FRIEND_FILE = "friend.txt";
 
+    /**
+     * Entry point for the program.
+     *
+     * @param args command line args
+     */
     public static void main(String[] args) {
         SocialNetwork network = new SocialNetwork();
         Scanner scanner = new Scanner(System.in);
@@ -14,6 +23,9 @@ public class SocialNetworkDriver {
         scanner.close();
     }
 
+    /**
+     * Loads the default network files from the project directory.
+     */
     private static void loadDefaultNetwork(SocialNetwork network) {
         boolean loaded = network.loadNetwork(DEFAULT_INDEX_FILE, DEFAULT_FRIEND_FILE);
         if (loaded) {
@@ -23,6 +35,9 @@ public class SocialNetworkDriver {
         }
     }
 
+    /**
+     * Runs the main menu loop until the user chooses to exit.
+     */
     private static void runMenu(SocialNetwork network, Scanner scanner) {
         while (true) {
             printMenu();
@@ -38,11 +53,14 @@ public class SocialNetworkDriver {
                     System.out.println("Goodbye.");
                     return;
                 }
-                default -> System.out.println("Please enter a number from 1 to 7.");
+                default -> printError("Please enter a number from 1 to 7.");
             }
         }
     }
 
+    /**
+     * Prints available menu options.
+     */
     private static void printMenu() {
         System.out.println();
         System.out.println("Social Network Menu");
@@ -56,6 +74,9 @@ public class SocialNetworkDriver {
         System.out.print("Enter your choice: ");
     }
 
+    /**
+     * Loads a replacement network from user-provided file names.
+     */
     private static void loadNewNetwork(SocialNetwork network, Scanner scanner) {
         System.out.print("Enter friend filename: ");
         String friendFile = scanner.nextLine().trim();
@@ -66,45 +87,66 @@ public class SocialNetworkDriver {
         if (loaded) {
             System.out.println("The new social network was loaded successfully.");
         } else {
-            System.out.println("Could not load the new social network. The network is now empty.");
+            printError("Could not load the new social network. The network is now empty.");
         }
     }
 
+    /**
+     * Handles menu option 2.
+     */
     private static void showFriends(SocialNetwork network, Scanner scanner) {
         if (ensureNetworkNotEmpty(network)) {
             return;
         }
         String name = promptName(scanner, "Enter a member name: ");
+        if (name.isEmpty()) {
+            printError("Please enter a name.");
+            return;
+        }
         List<String> friends = network.getFriends(name);
         if (friends == null) {
-            System.out.println("That name does not exist in this social network.");
+            printError("That name does not exist in this social network.");
             return;
         }
         printNameList("Friends", name, friends);
     }
 
+    /**
+     * Handles menu option 3.
+     */
     private static void showFriendsAndFriendsOfFriends(SocialNetwork network, Scanner scanner) {
         if (ensureNetworkNotEmpty(network)) {
             return;
         }
         String name = promptName(scanner, "Enter a member name: ");
+        if (name.isEmpty()) {
+            printError("Please enter a name.");
+            return;
+        }
         List<String> friends = network.getFriendsAndFriendsOfFriends(name);
         if (friends == null) {
-            System.out.println("That name does not exist in this social network.");
+            printError("That name does not exist in this social network.");
             return;
         }
         printNameList("Friends and friends of friends", name, friends);
     }
 
+    /**
+     * Handles menu option 4.
+     */
     private static void showCommonFriends(SocialNetwork network, Scanner scanner) {
         if (ensureNetworkNotEmpty(network)) {
             return;
         }
         String first = promptName(scanner, "Enter the first member name: ");
         String second = promptName(scanner, "Enter the second member name: ");
+        if (first.isEmpty() || second.isEmpty()) {
+            printError("Please enter both names.");
+            return;
+        }
 
         if (!network.memberExists(first) || !network.memberExists(second)) {
-            System.out.println("One or both names do not exist in this social network.");
+            printError("One or both names do not exist in this social network.");
             return;
         }
 
@@ -112,13 +154,20 @@ public class SocialNetworkDriver {
         printCommonFriends(first, second, common);
     }
 
+    /**
+     * Handles menu option 5.
+     */
     private static void deleteMember(SocialNetwork network, Scanner scanner) {
         if (ensureNetworkNotEmpty(network)) {
             return;
         }
         String name = promptName(scanner, "Enter the member name to delete: ");
+        if (name.isEmpty()) {
+            printError("Please enter a name.");
+            return;
+        }
         if (!network.memberExists(name)) {
-            System.out.println("That name does not exist in this social network.");
+            printError("That name does not exist in this social network.");
             return;
         }
 
@@ -130,10 +179,13 @@ public class SocialNetworkDriver {
         switch (result) {
             case DELETED -> System.out.println(name + " was deleted from the social network.");
             case CANCELLED -> System.out.println("Deletion cancelled.");
-            case NAME_NOT_FOUND -> System.out.println("That name does not exist in this social network.");
+            case NAME_NOT_FOUND -> printError("That name does not exist in this social network.");
         }
     }
 
+    /**
+     * Handles menu option 6.
+     */
     private static void showMembersByPopularity(SocialNetwork network) {
         if (ensureNetworkNotEmpty(network)) {
             return;
@@ -148,19 +200,35 @@ public class SocialNetworkDriver {
         }
     }
 
+    /**
+     * Ensures network data exists before running a menu action.
+     */
     private static boolean ensureNetworkNotEmpty(SocialNetwork network) {
         if (!network.isEmpty()) {
             return false;
         }
-        System.out.println("The social network is empty. Please load a network first.");
+        printError("The social network is empty. Please load a network first.");
         return true;
     }
 
+    /**
+     * Prints user-facing error messages to standard error.
+     */
+    private static void printError(String message) {
+        System.err.println(message);
+    }
+
+    /**
+     * Prompts for a name and returns trimmed input.
+     */
     private static String promptName(Scanner scanner, String prompt) {
         System.out.print(prompt);
         return scanner.nextLine().trim();
     }
 
+    /**
+     * Prints a heading and then each name in a list.
+     */
     private static void printNameList(String title, String name, List<String> names) {
         System.out.println();
         System.out.println(title + " for " + name + ":");
@@ -173,6 +241,9 @@ public class SocialNetworkDriver {
         }
     }
 
+    /**
+     * Prints common friends between two members.
+     */
     private static void printCommonFriends(String first, String second, List<String> common) {
         System.out.println();
         System.out.println("Common friends for " + first + " and " + second + ":");
