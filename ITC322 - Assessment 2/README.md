@@ -45,27 +45,6 @@ java SocialNetworkDriver
    - Provides options 1 to 7 exactly as required.
    - Option 1 loads a new network and replaces old data.
 
-## Design Notes
-- Inheritance requirement is satisfied: UndirectedGraph extends Graph.
-- Information hiding is used via private fields and focused public methods.
-- Methods are kept short and refactored for maintainability.
-- JavaDoc is provided for classes and methods.
-
-## Rubric Evidence (HD-Focused)
-- Functionality:
-   - All required menu tasks are implemented and tested.
-   - Program uses adjacency matrix structure through Graph/UndirectedGraph.
-   - Program reads default index.txt and friend.txt at startup.
-   - Errors and validation failures are reported with simple messages via System.err.
-- Design:
-   - Undirected graph behavior is implemented with inheritance and method override.
-   - Default file names are constants in SocialNetworkDriver.
-   - Code is split into reusable classes and helper methods.
-- Presentation and conventions:
-   - JavaDoc is included for classes and methods.
-   - Naming is consistent and descriptive.
-   - Internal comments explain key logic decisions.
-
 ## Sample Default Data
 index.txt
 6
