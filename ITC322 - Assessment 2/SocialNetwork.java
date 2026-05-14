@@ -42,6 +42,7 @@ public class SocialNetwork {
      */
     public boolean loadNetwork(String indexFilename, String friendFilename) {
         try {
+            // Parse both files first so partial state is never committed.
             LoadedIndex loadedIndex = readIndexFile(indexFilename);
             UndirectedGraph loadedGraph = readFriendFile(friendFilename, loadedIndex.names.length);
             this.names = loadedIndex.names;
@@ -55,6 +56,7 @@ public class SocialNetwork {
         } catch (IllegalArgumentException e) {
             System.err.println("Could not read network files: " + e.getMessage());
         }
+        // Reset to a known empty state when loading fails.
         clearNetwork();
         return false;
     }
@@ -102,7 +104,7 @@ public class SocialNetwork {
             if (!isEligibleMember(i)) {
                 continue;
             }
-            if (graph.hasEdge(index, i)) {
+            if (graph.isEdge(index, i)) {
                 selected[i] = true;
                 markFriends(i, selected);
             }
@@ -128,8 +130,8 @@ public class SocialNetwork {
             if (!isEligibleMember(i)) {
                 continue;
             }
-            boolean firstKnows = graph.hasEdge(firstIndex, i);
-            boolean secondKnows = graph.hasEdge(secondIndex, i);
+            boolean firstKnows = graph.isEdge(firstIndex, i);
+            boolean secondKnows = graph.isEdge(secondIndex, i);
             if (firstKnows && secondKnows) {
                 common.add(names[i]);
             }
@@ -153,6 +155,7 @@ public class SocialNetwork {
         if (!confirmed) {
             return DeleteResult.CANCELLED;
         }
+        // Remove all relationships so the deleted member is fully disconnected.
         removeAllEdges(index);
         active[index] = false;
         nameToIndex.remove(normalize(name));
@@ -196,6 +199,7 @@ public class SocialNetwork {
         try (Scanner scanner = new Scanner(new File(filename))) {
             int people = readNonNegativeInt(scanner, "index file is missing the number of people");
             String[] loadedNames = new String[people];
+            // Tracks normalized names to enforce case-insensitive uniqueness.
             Map<String, Integer> duplicateCheck = new HashMap<>();
             readIndexEntries(scanner, loadedNames, duplicateCheck);
             validateAllIndexEntriesExist(loadedNames);
@@ -210,6 +214,7 @@ public class SocialNetwork {
         try (Scanner scanner = new Scanner(new File(filename))) {
             UndirectedGraph loadedGraph = new UndirectedGraph(people);
             int pairs = readNonNegativeInt(scanner, "friend file is missing the number of friend pairs");
+            // Pair count controls exactly how many edges are read from the file.
             for (int i = 0; i < pairs; i++) {
                 int first = readVertex(scanner, people, "friend file has an invalid friend index");
                 int second = readVertex(scanner, people, "friend file has an invalid friend index");
@@ -337,7 +342,7 @@ public class SocialNetwork {
     private List<String> collectFriendsForIndex(int index) {
         List<String> friends = new ArrayList<>();
         for (int i = 0; i < names.length; i++) {
-            if (isEligibleMember(i) && graph.hasEdge(index, i)) {
+            if (isEligibleMember(i) && graph.isEdge(index, i)) {
                 friends.add(names[i]);
             }
         }
@@ -349,7 +354,7 @@ public class SocialNetwork {
      */
     private void markFriends(int source, boolean[] selected) {
         for (int i = 0; i < names.length; i++) {
-            if (isEligibleMember(i) && graph.hasEdge(source, i)) {
+            if (isEligibleMember(i) && graph.isEdge(source, i)) {
                 selected[i] = true;
             }
         }
@@ -365,6 +370,7 @@ public class SocialNetwork {
                 result.add(names[i]);
             }
         }
+        // Sorting here gives consistent, user-friendly output across all runs.
         sortCaseInsensitive(result);
         return result;
     }
@@ -373,6 +379,7 @@ public class SocialNetwork {
      * Removes all edges connected to a member index.
      */
     private void removeAllEdges(int index) {
+        // removeEdge in UndirectedGraph clears both directions.
         for (int i = 0; i < names.length; i++) {
             graph.removeEdge(index, i);
         }
@@ -384,7 +391,7 @@ public class SocialNetwork {
     private int countFriends(int index) {
         int total = 0;
         for (int i = 0; i < names.length; i++) {
-            if (isEligibleMember(i) && graph.hasEdge(index, i)) {
+            if (isEligibleMember(i) && graph.isEdge(index, i)) {
                 total++;
             }
         }

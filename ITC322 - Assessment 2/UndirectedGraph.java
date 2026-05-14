@@ -22,8 +22,8 @@ public class UndirectedGraph extends Graph {
         if (!isValidVertex(from) || !isValidVertex(to) || from == to) {
             return;
         }
-        adjacencyMatrix[from][to] = true;
-        adjacencyMatrix[to][from] = true;
+        super.addEdge(from, to);
+        super.addEdge(to, from);
     }
 
     /**
@@ -37,7 +37,14 @@ public class UndirectedGraph extends Graph {
         if (!isValidVertex(from) || !isValidVertex(to)) {
             return;
         }
-        adjacencyMatrix[from][to] = false;
-        adjacencyMatrix[to][from] = false;
+        super.removeEdge(from, to);
+        super.removeEdge(to, from);
+    }
+
+    /**
+     * Checks whether a vertex id is in range for this graph.
+     */
+    private boolean isValidVertex(int vertex) {
+        return vertex >= 0 && vertex < size();
     }
 }

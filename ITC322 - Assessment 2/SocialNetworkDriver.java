@@ -41,6 +41,7 @@ public class SocialNetworkDriver {
     private static void runMenu(SocialNetwork network, Scanner scanner) {
         while (true) {
             printMenu();
+            // Trim input to avoid accidental spaces causing invalid choices.
             String choice = scanner.nextLine().trim();
             switch (choice) {
                 case "1" -> loadNewNetwork(network, scanner);
@@ -83,6 +84,7 @@ public class SocialNetworkDriver {
         System.out.print("Enter index filename: ");
         String indexFile = scanner.nextLine().trim();
 
+        // A successful load completely replaces any previously loaded network.
         boolean loaded = network.loadNetwork(indexFile, friendFile);
         if (loaded) {
             System.out.println("The new social network was loaded successfully.");
@@ -98,6 +100,7 @@ public class SocialNetworkDriver {
         if (ensureNetworkNotEmpty(network)) {
             return;
         }
+        // Validate early so later calls can assume a non-empty name.
         String name = promptName(scanner, "Enter a member name: ");
         if (name.isEmpty()) {
             printError("Please enter a name.");
@@ -140,6 +143,7 @@ public class SocialNetworkDriver {
         }
         String first = promptName(scanner, "Enter the first member name: ");
         String second = promptName(scanner, "Enter the second member name: ");
+        // Check both names together so users get one clear message.
         if (first.isEmpty() || second.isEmpty()) {
             printError("Please enter both names.");
             return;
@@ -173,6 +177,7 @@ public class SocialNetworkDriver {
 
         System.out.print("Are you sure you want to delete " + name + "? Enter Y to confirm: ");
         String confirmation = scanner.nextLine().trim();
+    // Any response other than Y/y is treated as cancel for safety.
         boolean confirmed = confirmation.equalsIgnoreCase("Y");
 
         SocialNetwork.DeleteResult result = network.deleteMember(name, confirmed);
@@ -207,6 +212,7 @@ public class SocialNetworkDriver {
         if (!network.isEmpty()) {
             return false;
         }
+        // Centralized guard keeps empty-network messaging consistent.
         printError("The social network is empty. Please load a network first.");
         return true;
     }
